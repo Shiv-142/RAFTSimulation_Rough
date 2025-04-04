@@ -70,6 +70,10 @@ class TextAnimation:
         
         # Get text rect for centered positioning
         text_rect = text_surface.get_rect(center=(self.x, self.y))
+        # Draw the text
+        screen.blit(text_surface, text_rect)
+
+        return True  # Animation still running
 
 class ResetAnimation:
     def __init__(self, x, y, color=(0, 0, 0), duration=1.0):
