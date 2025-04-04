@@ -12,8 +12,10 @@ import threading
 logging.basicConfig(level=logging.INFO,
                    format='%(asctime)s - %(message)s',
                    datefmt='%H:%M:%S')
+pygame.font.init()
 
 nodes = []
+score = 0
 
 def checkFailure():
     deadNodes = 0
@@ -39,6 +41,8 @@ def main():
     pygame.display.set_caption("RAFT Heartbeat Visualization")
     clock = pygame.time.Clock()
     election_running = False;
+    font = pygame.font.Font(None, 36)
+    global score
 
     # Create threads
     thread = threading.Thread(target=checkFailure, daemon=True)
@@ -128,6 +132,7 @@ def main():
                     for enemy in enemies:
                         if (enemy.x <= mouse_x <= enemy.x + enemy.size) and (enemy.y <= mouse_y <= enemy.y + enemy.size): # Checking if the mouse cursor is clicking on the enemy's coordinates
                             enemies.remove(enemy) # Deleting the enemy by removing it from the enemies list
+                            score+=1
                     for node in nodes:
                         dx = node.x + node.size/2 - mouse_x
                         dy = node.y + node.size/2 - mouse_y
@@ -136,6 +141,9 @@ def main():
                             break
 
         screen.fill((255, 255, 255))
+
+        scoreText = font.render(f'Score: {score}', True, (0, 0, 0)) # This is for showing the score on screen, with the 0 0 0 being for the colour black
+        screen.blit(scoreText, (10, 10))
 
         # Find current leader
         leader = next((node for node in nodes if node.state == NodeState.LEADER), None)
