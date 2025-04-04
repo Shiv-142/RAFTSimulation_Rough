@@ -125,6 +125,9 @@ def main():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if not election_running:
                     mouse_x, mouse_y = pygame.mouse.get_pos()
+                    for enemy in enemies:
+                        if (enemy.x <= mouse_x <= enemy.x + enemy.size) and (enemy.y <= mouse_y <= enemy.y + enemy.size): # Checking if the mouse cursor is clicking on the enemy's coordinates
+                            enemies.remove(enemy) # Deleting the enemy by removing it from the enemies list
                     for node in nodes:
                         dx = node.x + node.size/2 - mouse_x
                         dy = node.y + node.size/2 - mouse_y
