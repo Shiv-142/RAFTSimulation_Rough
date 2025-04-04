@@ -2,6 +2,7 @@ import pygame
 import random
 import time
 import logging
+import math
 from node import Node, NodeState
 from node_network import NodeNetwork
 from enemy import Enemy
@@ -18,11 +19,11 @@ nodes = []
 score = 0
 
 def checkFailure():
-    deadNodes = 0
-    minTotal = len(nodes)//2
+    minTotal = len(nodes)//2 + 1
     alreadyTriggered = False
     time.sleep(2)
     while True:
+        deadNodes = 0
         for node in nodes:
             if node.state == NodeState.DEAD:
                 deadNodes+=1
@@ -33,7 +34,27 @@ def checkFailure():
             if deadNodes < minTotal:
                 alreadyTriggered = False
         time.sleep(0.5)
-                
+
+def reset_nodes():
+    nodesNum = 5
+    for node in nodes:
+        node.stop()
+        node.join()
+    nodes.clear()
+
+    for i in range(nodesNum):
+        x = random.randint(100, 700)
+        y = random.randint(100, 500)
+        node = Node(i, x, y, 30, nodesNum)
+        nodes.append(node)
+
+    # Start all node threads
+    for node in nodes:
+        node.start()
+
+    # Set initial leader
+    nodes[0].state = NodeState.LEADER
+    nodes[0].last_heartbeat = time.time()
                 
 def main():
     pygame.init()
@@ -43,10 +64,6 @@ def main():
     election_running = False;
     font = pygame.font.Font(None, 36)
     global score
-
-    # Create threads
-    thread = threading.Thread(target=checkFailure, daemon=True)
-    thread.start()
     
     # Create nodes
     nodesNum = 5
@@ -70,6 +87,10 @@ def main():
         x = random.randint(0, 800)
         y = random.randint(0, 600)
         enemies.append(Enemy(x, y))
+
+    # Create threads
+    fail_thread = threading.Thread(target=checkFailure, daemon=True)
+    fail_thread.start()
 
     # Animation list
     animations = []
@@ -99,8 +120,7 @@ def main():
                 animations.append(
                     ResetAnimation(400, 300)
                 )
-                for node in nodes:
-                    node.health = 100
+                reset_nodes()
                 logging.info(f"Reset request received. Resetting all nodes")
             elif event.type == VOTE_REQUEST:
                 election_running = True
